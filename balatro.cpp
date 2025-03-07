@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -97,7 +98,128 @@ public:
   }
 };
 
-void FindHighestScoreOnNumber(
+// 스트레이트 확인 함수
+bool HasStraight(const vector<int> &countNumberOnHand)
+{
+  // A-5-4-3-2 스트레이트 확인 (A는 1로도 사용 가능)
+  if (countNumberOnHand[1] > 0 && countNumberOnHand[2] > 0 &&
+      countNumberOnHand[3] > 0 && countNumberOnHand[4] > 0 &&
+      countNumberOnHand[14] > 0)
+  {
+    return true;
+  }
+
+  // 일반 스트레이트 확인 (5장 연속)
+  for (int i = 1; i <= 10; i++)
+  {
+    if (countNumberOnHand[i] > 0 && countNumberOnHand[i + 1] > 0 &&
+        countNumberOnHand[i + 2] > 0 && countNumberOnHand[i + 3] > 0 &&
+        countNumberOnHand[i + 4] > 0)
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// 플러시 확인 함수
+bool HasFlush(const vector<string> &MyCards)
+{
+  map<char, int> suitCount;
+
+  for (const auto &card : MyCards)
+  {
+    suitCount[card[0]]++;
+  }
+
+  // 같은 무늬가 5장 이상인지 확인
+  for (const auto &suit : suitCount)
+  {
+    if (suit.second >= 5)
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// 스트레이트 플러시 확인 함수
+bool HasStraightFlush(const vector<string> &MyCards)
+{
+  map<char, vector<int>> suitCards;
+
+  // 무늬별로 카드 분류
+  for (const auto &card : MyCards)
+  {
+    char suit = card[0];
+    char rank = card[1];
+    int rankValue;
+
+    if (rank == 'A')
+    {
+      rankValue = 14;
+      suitCards[suit].push_back(1); // A는 1과 14 둘 다 가능
+    }
+    else if (rank == 'K')
+    {
+      rankValue = 13;
+    }
+    else if (rank == 'Q')
+    {
+      rankValue = 12;
+    }
+    else if (rank == 'J')
+    {
+      rankValue = 11;
+    }
+    else if (rank == '0')
+    {
+      rankValue = 10;
+    }
+    else
+    {
+      rankValue = rank - '0';
+    }
+
+    suitCards[suit].push_back(rankValue);
+  }
+
+  // 각 무늬별로 스트레이트 여부 확인
+  for (auto &suit : suitCards)
+  {
+    if (suit.second.size() >= 5)
+    {
+      // 중복 제거 및 정렬
+      sort(suit.second.begin(), suit.second.end());
+      suit.second.erase(unique(suit.second.begin(), suit.second.end()), suit.second.end());
+
+      // 스트레이트 확인
+      for (size_t i = 0; i <= suit.second.size() - 5; i++)
+      {
+        if (suit.second[i + 4] - suit.second[i] == 4)
+        {
+          return true;
+        }
+      }
+
+      // A-5-4-3-2 스트레이트 확인
+      if (find(suit.second.begin(), suit.second.end(), 14) != suit.second.end() &&
+          find(suit.second.begin(), suit.second.end(), 2) != suit.second.end() &&
+          find(suit.second.begin(), suit.second.end(), 3) != suit.second.end() &&
+          find(suit.second.begin(), suit.second.end(), 4) != suit.second.end() &&
+          find(suit.second.begin(), suit.second.end(), 5) != suit.second.end())
+      {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+map<string, int> FindHighestScoreOnNumber(
     map<string, vector<int>> &Poker_Ranks, map<string, map<string, int>> &Cards,
     vector<string> &MyCards)
 { // 숫자 중 가장 큰 조합을 뽑는 함수
@@ -139,12 +261,156 @@ void FindHighestScoreOnNumber(
       countNumberOnHand[RankNumber]++;
     }
   }
-  // 이제 Poker_Rank와 countNumberOnHand를 이용해 각각의 족보가 가능한지 확인.
-  // 확인하는 족보: 하이카드, 페어, 투페어, 트리플, 포카드
-  // 맨 마지막에 High_Card를 넣어야 함.
-  vector<int> NumberScore = {0, 0, 0, 0, 0};
 
-  // condition => NumberScore[i] = Rank * 칩의 개수
+  // 이제 Poker_Rank와 countNumberOnHand를 이용해 각각의 족보가 가능한지 확인.
+  vector<int> NumberScore = {0, 0, 0, 0, 0};
+  map<string, int> HandScores = {
+      {"High_Card", 0},
+      {"Pair", 0},
+      {"Two_Pair", 0},
+      {"Triple", 0},
+      {"Straight", 0},
+      {"Flush", 0},
+      {"Full_House", 0},
+      {"Four_Card", 0},
+      {"Straight_Flush", 0}};
+
+  // 스트레이트 플러시 확인
+  if (HasStraightFlush(MyCards))
+  {
+    int level = Poker_Ranks["Straight_Flush"][0];
+    int chips = Poker_Ranks["Straight_Flush"][1];
+    int multiplier = Poker_Ranks["Straight_Flush"][2];
+    HandScores["Straight_Flush"] = level * chips * multiplier;
+  }
+
+  // 포카드 확인
+  bool hasFourCard = false;
+  for (int i = 1; i <= 14; i++)
+  {
+    if (countNumberOnHand[i] >= 4)
+    {
+      hasFourCard = true;
+      int level = Poker_Ranks["Four_Card"][0];
+      int chips = Poker_Ranks["Four_Card"][1];
+      int multiplier = Poker_Ranks["Four_Card"][2];
+      HandScores["Four_Card"] = level * chips * multiplier;
+      break;
+    }
+  }
+
+  // 풀하우스 확인
+  bool hasThreeOfAKind = false;
+  int tripleRank = 0;
+  bool hasPair = false;
+  int pairRank = 0;
+
+  for (int i = 1; i <= 14; i++)
+  {
+    if (countNumberOnHand[i] >= 3)
+    {
+      hasThreeOfAKind = true;
+      tripleRank = i;
+    }
+  }
+
+  for (int i = 1; i <= 14; i++)
+  {
+    if (i != tripleRank && countNumberOnHand[i] >= 2)
+    {
+      hasPair = true;
+      pairRank = i;
+      break;
+    }
+  }
+
+  if (hasThreeOfAKind && hasPair)
+  {
+    int level = Poker_Ranks["Full_House"][0];
+    int chips = Poker_Ranks["Full_House"][1];
+    int multiplier = Poker_Ranks["Full_House"][2];
+    HandScores["Full_House"] = level * chips * multiplier;
+  }
+
+  // 플러시 확인
+  if (HasFlush(MyCards))
+  {
+    int level = Poker_Ranks["Flush"][0];
+    int chips = Poker_Ranks["Flush"][1];
+    int multiplier = Poker_Ranks["Flush"][2];
+    HandScores["Flush"] = level * chips * multiplier;
+  }
+
+  // 스트레이트 확인
+  if (HasStraight(countNumberOnHand))
+  {
+    int level = Poker_Ranks["Straight"][0];
+    int chips = Poker_Ranks["Straight"][1];
+    int multiplier = Poker_Ranks["Straight"][2];
+    HandScores["Straight"] = level * chips * multiplier;
+  }
+
+  // 트리플 확인 (풀하우스 아닌 경우)
+  if (hasThreeOfAKind && !hasPair)
+  {
+    int level = Poker_Ranks["Triple"][0];
+    int chips = Poker_Ranks["Triple"][1];
+    int multiplier = Poker_Ranks["Triple"][2];
+    HandScores["Triple"] = level * chips * multiplier;
+  }
+
+  // 투페어 확인
+  int pairCount = 0;
+  for (int i = 1; i <= 14; i++)
+  {
+    if (countNumberOnHand[i] >= 2)
+    {
+      pairCount++;
+    }
+  }
+
+  if (pairCount >= 2)
+  {
+    int level = Poker_Ranks["Two_Pair"][0];
+    int chips = Poker_Ranks["Two_Pair"][1];
+    int multiplier = Poker_Ranks["Two_Pair"][2];
+    HandScores["Two_Pair"] = level * chips * multiplier;
+  }
+
+  // 원페어 확인
+  if (pairCount == 1)
+  {
+    int level = Poker_Ranks["Pair"][0];
+    int chips = Poker_Ranks["Pair"][1];
+    int multiplier = Poker_Ranks["Pair"][2];
+    HandScores["Pair"] = level * chips * multiplier;
+  }
+
+  // 하이카드 (항상 있음)
+  int level = Poker_Ranks["High_Card"][0];
+  int chips = Poker_Ranks["High_Card"][1];
+  int multiplier = Poker_Ranks["High_Card"][2];
+  HandScores["High_Card"] = level * chips * multiplier;
+
+  return HandScores;
+}
+
+// 가장 높은 점수의 족보를 찾는 함수
+pair<string, int> FindBestHand(const map<string, int> &HandScores)
+{
+  string bestHand = "High_Card";
+  int highestScore = 0;
+
+  for (const auto &hand : HandScores)
+  {
+    if (hand.second > highestScore)
+    {
+      highestScore = hand.second;
+      bestHand = hand.first;
+    }
+  }
+
+  return {bestHand, highestScore};
 }
 
 int main()
@@ -154,6 +420,11 @@ int main()
   pokerhands.Initialize_PokerRank();
   trump.Initialize_Trump();
 
+  cout << "<<카드 표기법>>\n스페이드: S, 다이아: D, 하트: H, 클로버: C\n";
+  cout << "킹, 퀸, 잭, 에이스: K, Q, J, A\n";
+  cout << "숫자: 숫자\n";
+  cout << "예시: 하트 킹인 경우 HK, 클로버 6인 경우 C6으로 입력.\n띄어쓰기로 카드를 구별하며, 입력이 다 된 후 띄어쓴 다음 0을 입력하여 입력을 종료합니다.\n";
+  cout << "카드 족보를 입력해주세요.\n\n>>";
   while (true)
   { // 카드 입력받고, MyCards에 push_back
     string card;
@@ -168,6 +439,10 @@ int main()
     }
   }
 
-  FindHighestScoreOnNumber(pokerhands.Poker_Ranks, trump.Cards, trump.MyCards);
+  map<string, int> handScores = FindHighestScoreOnNumber(pokerhands.Poker_Ranks, trump.Cards, trump.MyCards);
+  pair<string, int> bestHand = FindBestHand(handScores);
+
+  cout << "최고점수의 족보: " << bestHand.first << endl;
+
   return 0;
 }
