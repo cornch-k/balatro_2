@@ -1,0 +1,16 @@
+{
+  "files.associations": {
+    "ostream": "cpp",
+    "vector": "cpp",
+    "__split_buffer": "cpp",
+    "deque": "cpp",
+    "list": "cpp",
+    "string": "cpp",
+    "unordered_map": "cpp",
+    "iostream": "cpp",
+    "set": "cpp",
+    "cstddef": "cpp",
+    "complex": "cpp",
+    "valarray": "cpp"
+  }
+}
