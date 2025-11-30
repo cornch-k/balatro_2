@@ -1,17 +1,27 @@
-# 발라트로에서 최고 점수 찾아주는 프로그램(?)
+# Balatro Score Calculator
 
-휴학중입니다만, 하라는 공부는 안하고 발라트로에 빠져버렸습니다.\
-그런데 아무래도 점수를 예상해서 포커핸드를 내는게 너무 귀찮더라구요.\
-솔직히 1엔티면 스트레이트 풀하우스 몇 번 해주면 되는데 조금만 라운드가 커져도 그게 어렵더라구요.\
-그래서 만들고 있습니다.
+A score calculation tool for Balatro, a poker-based deck-building roguelike game. This program helps you find the optimal score based on your deck, jokers, celestial cards, and vouchers.
 
-객체지향이라고는 1도 모르고 C++도 파이썬도 애매하게 아는 상태에서 만드는거라 코드가 개판일거같습니다.\
+Predicting scores while playing poker hands became increasingly difficult. While it's manageable with just cards in Ante 1, as antes and rounds progress, calculations become much more complex. This tool was created to solve that inconvenience.
 
-구현할 기능들은 다음과 같습니다.
-1. 카드(스톤, 보너스), 조커, 천체레벨, 바우처(관측소 등) 입력
-2. 예상 최고 점수(보스 고려X)와 추천 카드
+Features to be implemented:
+1. Input cards (stone, bonus), jokers, celestial levels, vouchers (observatory, etc.)
+2. Expected maximum score (excluding boss conditions) and recommended cards
 
-혹시나
->어떻게 수정하면 좋겠다!
->
-싶으신 분이 계시다면, lunav1346@kau.kr로 메일을 보내주시면 감사하겠습니다.
+If you have any suggestions for improvements, please send an email to ditto_eevee@icloud.com. Your feedback is appreciated.
+
+****
+# Balatroスコア計算機
+
+変形ポーカーベースのデッキ構築ローグライクゲーム、Balatroでデッキとジョーカー、天体カード、バウチャーに基づいて最高スコアを見つけるツールです。
+
+ポーカーハンドを出す際にスコアを予測するのがとても難しくなってきました。Ante 1ではカードだけでも予測可能ですが、Anteが上がりラウンドが進むにつれて予測が困難になりました。この不便さを解決するために作成しています。
+
+実装予定の機能:
+1. カード(ストーン、ボーナス)、ジョーカー、天体レベル、バウチャー(観測所など)の入力
+2. 予想最高スコア(ボス考慮なし)とおすすめカード
+
+もし
+>このように修正したらいいんじゃないか!
+
+と思われる方がいらっしゃいましたら、ditto_eevee@icloud.comまでメールをお送りいただければ幸いです。
